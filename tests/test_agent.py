@@ -54,3 +54,41 @@ def test_epsilon_decays_to_floor():
     agent.end_session()
     assert agent.epsilon == config.EPSILON_MIN
     assert agent.trained_sessions == 2
+
+
+def test_save_load_roundtrip(tmp_path):
+    agent = make_agent(epsilon=0.3)
+    agent.alpha = 0.2
+    agent.gamma = 0.9
+    agent.encoder_name = "binary16"
+    agent.trained_sessions = 42
+    agent.q_table[5] = [1.0, 2.0, 3.0, 4.0]
+    path = str(tmp_path / "model.txt")
+    agent.save(path)
+    loaded = QLearningAgent.load(path)
+    assert loaded.alpha == 0.2
+    assert loaded.gamma == 0.9
+    assert loaded.epsilon == 0.3
+    assert loaded.encoder_name == "binary16"
+    assert loaded.trained_sessions == 42
+    assert loaded.q_table == {5: [1.0, 2.0, 3.0, 4.0]}
+
+
+def test_load_rejects_invalid_file(tmp_path):
+    path = tmp_path / "bad.txt"
+    path.write_text("not a model")
+    try:
+        QLearningAgent.load(str(path))
+        assert False, "expected ValueError"
+    except ValueError:
+        pass
+
+
+def test_load_rejects_wrong_version(tmp_path):
+    path = tmp_path / "old.txt"
+    path.write_text('{"format_version": 99}')
+    try:
+        QLearningAgent.load(str(path))
+        assert False, "expected ValueError"
+    except ValueError:
+        pass

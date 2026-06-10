@@ -1,4 +1,5 @@
 """Q-learning agent: sparse Q-table with an epsilon-greedy policy."""
+import json
 import random
 
 from src import config
@@ -46,3 +47,40 @@ class QLearningAgent:
         self.trained_sessions += 1
         self.epsilon = max(config.EPSILON_MIN,
                            self.epsilon * config.EPSILON_DECAY)
+
+    def save(self, path):
+        """Export the full learning state to a human-readable file."""
+        data = {
+            "format_version": self.FORMAT_VERSION,
+            "state_encoder": self.encoder_name,
+            "hyperparams": {"alpha": self.alpha, "gamma": self.gamma},
+            "epsilon": self.epsilon,
+            "trained_sessions": self.trained_sessions,
+            "q_table": {str(s): v for s, v in self.q_table.items()},
+        }
+        with open(path, "w", encoding="utf-8") as handle:
+            json.dump(data, handle)
+
+    @classmethod
+    def load(cls, path, rng=None):
+        """Import a learning state previously written by save()."""
+        try:
+            with open(path, encoding="utf-8") as handle:
+                data = json.load(handle)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"not a valid model file: {path}") from exc
+        if data.get("format_version") != cls.FORMAT_VERSION:
+            raise ValueError(f"unsupported model format: {path}")
+        agent = cls(
+            alpha=data["hyperparams"]["alpha"],
+            gamma=data["hyperparams"]["gamma"],
+            epsilon=data["epsilon"],
+            encoder_name=data["state_encoder"],
+            rng=rng,
+        )
+        agent.trained_sessions = data["trained_sessions"]
+        agent.q_table = {
+            int(state): [float(v) for v in values]
+            for state, values in data["q_table"].items()
+        }
+        return agent
