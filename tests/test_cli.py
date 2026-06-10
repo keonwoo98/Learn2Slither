@@ -54,3 +54,15 @@ def test_missing_model_file_is_graceful_error(capsys):
     code = main(["-load", "/nonexistent/model.txt", "-visual", "off"])
     assert code == 1
     assert "error" in capsys.readouterr().err
+
+
+def test_evaluate_script_reports_stats(tmp_path, capsys):
+    model = str(tmp_path / "m.txt")
+    main(["-sessions", "5", "-visual", "off", "-quiet",
+          "-seed", "3", "-save", model])
+    capsys.readouterr()
+    from scripts.evaluate import evaluate
+    stats = evaluate(model, games=5, board_size=10, seed=1)
+    assert stats["games"] == 5
+    assert stats["max_length"] >= 3
+    assert stats["mean_duration"] > 0
