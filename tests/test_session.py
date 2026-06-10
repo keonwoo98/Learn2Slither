@@ -87,3 +87,21 @@ def test_starvation_cap_ends_looping_session(monkeypatch):
                            verbose=False, log_sessions=False)
     results = runner.run(1)
     assert results[0][1] == 20  # 20 스텝에서 강제 종료
+
+
+def test_same_model_runs_on_any_board_size(tmp_path):
+    rng = random.Random(0)
+    env = Environment(size=10, rng=rng)
+    agent = QLearningAgent(rng=rng)
+    SessionRunner(env, agent, verbose=False,
+                  log_sessions=False).run(30)
+    path = str(tmp_path / "model.txt")
+    agent.save(path)
+    for size in (5, 12, 20):
+        rng2 = random.Random(1)
+        loaded = QLearningAgent.load(path, rng=rng2)
+        env2 = Environment(size=size, rng=rng2)
+        runner = SessionRunner(env2, loaded, learning=False,
+                               verbose=False, log_sessions=False)
+        results = runner.run(3)
+        assert len(results) == 3

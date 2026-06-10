@@ -69,6 +69,17 @@ starvation cap 500 steps.
 - bonus 단계: median 35.5 → **15/20/25/30/35 전 단계 달성** (max 51).
 - 학습 진행도(1→10→100→1k→10k→50k)가 단조 증가 — 디펜스 시연 가능.
 
+## Bonus: board-size 일반화 (best.txt, 50게임/크기)
+
+| board | mean_len | max_len | p10+ |
+|---|---|---|---|
+| 10×10 | 31.24 | 46 | 0.96 |
+| 15×15 | 48.98 | 68 | 0.98 |
+| 20×20 | 60.30 | 91 | 1.00 |
+
+상대적(relative) state 인코딩 덕분에 동일 모델이 모든 보드 크기에서
+동작하며, 공간이 넓을수록 성능이 오히려 상승.
+
 ## Alternate update strategy 모델
 
 `models/alt-binary12-50k.txt` — binary12 encoder(축소 state 공간) 학습본.
