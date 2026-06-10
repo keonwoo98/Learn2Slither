@@ -22,5 +22,8 @@ train:
 		-save models/1000sess.txt
 	$(PYTHON) snake -visual off -quiet -seed 42 -sessions 10000 \
 		-save models/10000sess.txt
+	$(PYTHON) snake -visual off -quiet -seed 42 -sessions 50000 \
+		-save models/50000sess.txt
+	cp models/50000sess.txt models/best.txt
 
 .PHONY: install lint test train

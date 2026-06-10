@@ -37,7 +37,7 @@ def build_parser():
     parser.add_argument("-quiet", action="store_true",
                         help="suppress per-step terminal output")
     parser.add_argument("-encoder", choices=sorted(ENCODERS),
-                        default="binary12",
+                        default="binary16",
                         help="state encoder for a fresh agent")
     return parser
 

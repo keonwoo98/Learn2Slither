@@ -1,0 +1,1 @@
+{"format_version": 1, "state_encoder": "binary16", "hyperparams": {"alpha": 0.1, "gamma": 0.99}, "epsilon": 0.995, "trained_sessions": 1, "q_table": {"15": [-10.0, 0.0, 0.0, 0.0]}}

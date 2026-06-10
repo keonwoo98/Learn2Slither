@@ -13,7 +13,7 @@ class QLearningAgent:
 
     def __init__(self, alpha=config.ALPHA, gamma=config.GAMMA,
                  epsilon=config.EPSILON_START,
-                 encoder_name="binary12", rng=None):
+                 encoder_name="binary16", rng=None):
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon

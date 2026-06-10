@@ -44,8 +44,9 @@ def test_update_bootstraps_next_state():
     agent = make_agent()
     agent.q_table[2] = [0.0, 4.0, 0.0, 0.0]
     agent.update(1, Action.RIGHT, 1.0, 2, done=False)
-    # target = 1 + 0.95*4 = 4.8 ; Q = 0 + 0.1*4.8 = 0.48
-    assert abs(agent.q_table[1][Action.RIGHT] - 0.48) < 1e-9
+    # target = r + gamma * max(Q[next]) ; Q = alpha * target
+    expected = agent.alpha * (1.0 + agent.gamma * 4.0)
+    assert abs(agent.q_table[1][Action.RIGHT] - expected) < 1e-9
 
 
 def test_epsilon_decays_to_floor():
