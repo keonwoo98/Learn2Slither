@@ -58,6 +58,16 @@ def _run(args):
         if args.visual == "on":
             from src.display import Display
             display = Display(args.board_size, args.speed)
+            started = display.show_lobby([
+                f"sessions: {args.sessions}",
+                f"board: {args.board_size}x{args.board_size}",
+                f"model: {args.load or 'fresh agent'}",
+                f"mode: {'evaluate' if args.dontlearn else 'train'}",
+                f"speed: {args.speed} ms   "
+                f"(+/- speed, P pause, SPACE step)",
+            ])
+            if not started:
+                return
         runner = SessionRunner(
             env, agent,
             learning=not args.dontlearn,

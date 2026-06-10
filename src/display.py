@@ -87,5 +87,35 @@ class Display:
                     self.paused = False
                     return True
 
+    def show_lobby(self, lines):
+        """Start screen: config summary; SPACE to start, Q to quit."""
+        self.screen.fill(BG)
+        title = pygame.font.SysFont(None, 42).render(
+            "Learn2Slither", True, HEAD)
+        self.screen.blit(title, (20, 20))
+        for i, line in enumerate(lines):
+            label = self.font.render(line, True, TEXT)
+            self.screen.blit(label, (20, 80 + i * 28))
+        hint = self.font.render(
+            "SPACE: start    Q: quit", True, GREEN)
+        self.screen.blit(hint, (20, 80 + len(lines) * 28 + 20))
+        pygame.display.flip()
+        return self._wait_for_step()
+
+    def show_summary(self, lines):
+        """End screen: session results; any key to close."""
+        self.screen.fill(BG)
+        title = pygame.font.SysFont(None, 42).render(
+            "Results", True, GREEN)
+        self.screen.blit(title, (20, 20))
+        for i, line in enumerate(lines):
+            label = self.font.render(line, True, TEXT)
+            self.screen.blit(label, (20, 80 + i * 28))
+        pygame.display.flip()
+        while True:
+            event = pygame.event.wait()
+            if event.type in (pygame.QUIT, pygame.KEYDOWN):
+                return
+
     def close(self):
         pygame.quit()

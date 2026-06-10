@@ -61,6 +61,17 @@ class SessionRunner:
         max_dur = max((r[1] for r in results), default=0)
         print(f"Game over, max length = {max_len}, "
               f"max duration = {max_dur}")
+        if self.display is not None and results and not stopped:
+            lengths = [r[0] for r in results]
+            durations = [r[1] for r in results]
+            self.display.show_summary([
+                f"sessions: {len(results)}",
+                f"max length: {max_len}",
+                f"max duration: {max_dur}",
+                f"mean length: {sum(lengths) / len(lengths):.2f}",
+                f"mean duration: "
+                f"{sum(durations) / len(durations):.2f}",
+            ])
         return results
 
     def _render(self, session_num):
