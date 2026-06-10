@@ -78,3 +78,33 @@ class Environment:
                 if (r, c) not in occupied]
         if free:
             apples.add(self.rng.choice(free))
+
+    def step(self, action):
+        """Advance one step in the given direction. Returns the Event."""
+        if not self.alive:
+            raise RuntimeError("step() called on a finished game")
+        self.duration += 1
+        d_row, d_col = DELTAS[action]
+        head = (self.snake[0][0] + d_row, self.snake[0][1] + d_col)
+        if not self._in_bounds(head) or head in self.snake:
+            self.alive = False
+            return Event.DIED
+        self.snake.insert(0, head)
+        if head in self.green_apples:
+            self.green_apples.discard(head)
+            self._spawn(self.green_apples)
+            event = Event.ATE_GREEN
+        elif head in self.red_apples:
+            self.red_apples.discard(head)
+            self.snake.pop()
+            self.snake.pop()
+            self._spawn(self.red_apples)
+            if not self.snake:
+                self.alive = False
+                return Event.DIED
+            event = Event.ATE_RED
+        else:
+            self.snake.pop()
+            event = Event.MOVED
+        self.max_length = max(self.max_length, len(self.snake))
+        return event
