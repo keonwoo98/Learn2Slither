@@ -111,6 +111,8 @@ class Display:
         for i, line in enumerate(lines):
             label = self.font.render(line, True, TEXT)
             self.screen.blit(label, (20, 80 + i * 28))
+        hint = self.font.render("press any key to close", True, GREEN)
+        self.screen.blit(hint, (20, 80 + len(lines) * 28 + 20))
         pygame.display.flip()
         while True:
             event = pygame.event.wait()
