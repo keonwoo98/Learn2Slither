@@ -66,3 +66,25 @@ def test_evaluate_script_reports_stats(tmp_path, capsys):
     assert stats["games"] == 5
     assert stats["max_length"] >= 3
     assert stats["mean_duration"] > 0
+
+
+def test_evaluate_main_missing_file_is_graceful(capsys):
+    from scripts.evaluate import main as eval_main
+    code = eval_main(["/nonexistent/model.txt", "-games", "1"])
+    assert code == 1
+    assert "error" in capsys.readouterr().err
+
+
+def test_evaluate_main_invalid_model_is_graceful(tmp_path, capsys):
+    bad = tmp_path / "bad.txt"
+    bad.write_text("garbage")
+    from scripts.evaluate import main as eval_main
+    code = eval_main([str(bad), "-games", "1"])
+    assert code == 1
+    assert "error" in capsys.readouterr().err
+
+
+def test_evaluate_main_rejects_zero_games():
+    from scripts.evaluate import main as eval_main
+    with pytest.raises(SystemExit):
+        eval_main(["whatever.txt", "-games", "0"])

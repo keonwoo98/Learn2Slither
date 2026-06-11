@@ -93,3 +93,26 @@ def test_load_rejects_wrong_version(tmp_path):
         assert False, "expected ValueError"
     except ValueError:
         pass
+
+
+def test_load_rejects_missing_keys(tmp_path):
+    path = tmp_path / "m.txt"
+    path.write_text('{"format_version": 1}')
+    try:
+        QLearningAgent.load(str(path))
+        assert False, "expected ValueError"
+    except ValueError as exc:
+        assert "invalid model file" in str(exc)
+
+
+def test_load_rejects_wrong_arity_q_row(tmp_path):
+    path = tmp_path / "m.txt"
+    path.write_text(
+        '{"format_version": 1, "state_encoder": "binary16", '
+        '"hyperparams": {"alpha": 0.1, "gamma": 0.9}, "epsilon": 0.1, '
+        '"trained_sessions": 1, "q_table": {"5": [1.0, 2.0]}}')
+    try:
+        QLearningAgent.load(str(path))
+        assert False, "expected ValueError"
+    except ValueError as exc:
+        assert "q_table" in str(exc)

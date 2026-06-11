@@ -71,16 +71,25 @@ class QLearningAgent:
             raise ValueError(f"not a valid model file: {path}") from exc
         if data.get("format_version") != cls.FORMAT_VERSION:
             raise ValueError(f"unsupported model format: {path}")
-        agent = cls(
-            alpha=data["hyperparams"]["alpha"],
-            gamma=data["hyperparams"]["gamma"],
-            epsilon=data["epsilon"],
-            encoder_name=data["state_encoder"],
-            rng=rng,
-        )
-        agent.trained_sessions = data["trained_sessions"]
-        agent.q_table = {
-            int(state): [float(v) for v in values]
-            for state, values in data["q_table"].items()
-        }
+        try:
+            agent = cls(
+                alpha=data["hyperparams"]["alpha"],
+                gamma=data["hyperparams"]["gamma"],
+                epsilon=data["epsilon"],
+                encoder_name=data["state_encoder"],
+                rng=rng,
+            )
+            agent.trained_sessions = data["trained_sessions"]
+            agent.q_table = {
+                int(state): [float(v) for v in values]
+                for state, values in data["q_table"].items()
+            }
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(
+                f"invalid model file: {path} ({exc})") from exc
+        for values in agent.q_table.values():
+            if len(values) != len(Action):
+                raise ValueError(
+                    f"invalid model file: {path} "
+                    f"(q_table rows must have {len(Action)} values)")
         return agent

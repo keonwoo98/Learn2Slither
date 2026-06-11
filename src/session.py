@@ -26,6 +26,7 @@ class SessionRunner:
         for num in range(1, sessions + 1):
             self.env.reset()
             steps_since_food = 0
+            truncated = False
             while self.env.alive:
                 if not self._render(num):
                     stopped = True
@@ -47,14 +48,20 @@ class SessionRunner:
                 else:
                     steps_since_food += 1
                 if steps_since_food >= config.MAX_STEPS_WITHOUT_FOOD:
+                    truncated = True
                     break
             results.append((self.env.max_length, self.env.duration))
             if self.learning:
                 self.agent.end_session()
             if self.log_sessions:
+                note = ""
+                if truncated:
+                    note = (f" (truncated: "
+                            f"{config.MAX_STEPS_WITHOUT_FOOD} steps "
+                            f"without food)")
                 print(f"Session {num}/{sessions}: "
                       f"length = {self.env.max_length}, "
-                      f"duration = {self.env.duration}")
+                      f"duration = {self.env.duration}{note}")
             if stopped:
                 break
         max_len = max((r[0] for r in results), default=0)

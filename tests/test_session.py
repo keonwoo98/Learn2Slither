@@ -89,6 +89,28 @@ def test_starvation_cap_ends_looping_session(monkeypatch):
     assert results[0][1] == 20  # 20 스텝에서 강제 종료
 
 
+def test_starvation_cap_prints_truncation_notice(monkeypatch, capsys):
+    from src import config
+    monkeypatch.setattr(config, "MAX_STEPS_WITHOUT_FOOD", 20)
+    env = _LoopEnv(rng=random.Random(0))
+    runner = SessionRunner(env, _CycleAgent(), learning=False,
+                           verbose=False, log_sessions=True)
+    runner.run(1)
+    out = capsys.readouterr().out
+    assert "truncated" in out
+
+
+def test_normal_session_log_has_no_truncation_notice(capsys):
+    rng = random.Random(42)
+    env = Environment(rng=rng)
+    agent = QLearningAgent(rng=rng)
+    runner = SessionRunner(env, agent, verbose=False, log_sessions=True)
+    runner.run(2)
+    out = capsys.readouterr().out
+    assert "truncated" not in out
+    assert "Session 1/2" in out
+
+
 def test_same_model_runs_on_any_board_size(tmp_path):
     rng = random.Random(0)
     env = Environment(size=10, rng=rng)

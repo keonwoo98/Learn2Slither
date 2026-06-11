@@ -3,6 +3,7 @@
 import argparse
 import random
 import statistics
+import sys
 
 from src.agent import QLearningAgent
 from src.environment import Environment
@@ -30,22 +31,32 @@ def evaluate(model_path, games=100, board_size=10, seed=42):
     }
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("model")
     parser.add_argument("-games", type=int, default=100)
     parser.add_argument("-board-size", dest="board_size", type=int,
                         default=10)
     parser.add_argument("-seed", type=int, default=42)
-    args = parser.parse_args()
-    stats = evaluate(args.model, args.games, args.board_size, args.seed)
+    args = parser.parse_args(argv)
+    if args.games < 1:
+        parser.error("-games must be >= 1")
+    if args.board_size < 5:
+        parser.error("-board-size must be >= 5")
+    try:
+        stats = evaluate(args.model, args.games, args.board_size,
+                         args.seed)
+    except (OSError, ValueError) as exc:
+        print(f"evaluate: error: {exc}", file=sys.stderr)
+        return 1
     print(f"model: {args.model}  board: {args.board_size}")
     for key, value in stats.items():
         if isinstance(value, float):
             print(f"  {key}: {value:.2f}")
         else:
             print(f"  {key}: {value}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

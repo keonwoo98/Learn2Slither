@@ -41,6 +41,12 @@ state encodes, per direction: danger adjacent, green apple seen, red
 apple seen, body seen (relative features, so the same model plays on
 any board size).
 
+The board implements exactly the subject's three game-over rules
+(wall, own tail, length 0). Independently of those, the session
+runner truncates a session after 500 consecutive steps without
+eating — an anti-livelock guard (a greedy policy can loop forever);
+truncated sessions are marked as such in the per-session log.
+
 ## Models
 
 `models/` contains learning states trained for 1, 10, 100, 1000,
