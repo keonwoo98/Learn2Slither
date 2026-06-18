@@ -91,3 +91,30 @@ def reward_for(event):
     if event == Event.DIED:
         return config.REWARD_DEATH
     return config.REWARD_MOVE
+
+
+_VISION_COLORS = {
+    "W": "\033[90m",     # wall: grey
+    "H": "\033[1;96m",   # head: bright cyan, bold
+    "S": "\033[94m",     # body: blue
+    "G": "\033[92m",     # green apple
+    "R": "\033[91m",     # red apple
+    "0": "\033[2;37m",   # empty: dim
+}
+_RESET = "\033[0m"
+
+
+def colorize_vision(lines):
+    """Wrap each glyph in ANSI colour codes (for human-readable TTYs).
+
+    The characters are unchanged; only colour escapes are added, so
+    stripping the escapes reproduces the subject's exact vision format.
+    """
+    colored = []
+    for line in lines:
+        buffer = ""
+        for char in line:
+            color = _VISION_COLORS.get(char)
+            buffer += (color + char + _RESET) if color else char
+        colored.append(buffer)
+    return colored

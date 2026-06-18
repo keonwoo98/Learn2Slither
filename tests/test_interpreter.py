@@ -1,9 +1,10 @@
 import random
+import re
 
 from src import config
 from src.environment import Environment, Event
-from src.interpreter import (ENCODERS, cell_char, encode_binary12,
-                             reward_for, vision_lines)
+from src.interpreter import (ENCODERS, cell_char, colorize_vision,
+                             encode_binary12, reward_for, vision_lines)
 
 
 def fixed_env(snake, green=(), red=(), size=10):
@@ -88,3 +89,15 @@ def test_rewards():
     assert reward_for(Event.ATE_RED) == config.REWARD_RED
     assert reward_for(Event.MOVED) == config.REWARD_MOVE
     assert reward_for(Event.DIED) == config.REWARD_DEATH
+
+
+def test_colorize_vision_preserves_characters():
+    # 색을 입혀도 ANSI 코드를 떼면 원본 문자 구성이 그대로여야 한다
+    # (서브젝트 그림 형식 보존).
+    env = fixed_env([(7, 9), (8, 9), (8, 8)],
+                    green=[(2, 9), (3, 6)], red=[(3, 9)])
+    plain = vision_lines(env)
+    colored = colorize_vision(plain)
+    stripped = [re.sub(r"\x1b\[[0-9;]*m", "", line) for line in colored]
+    assert stripped == plain
+    assert any("\x1b[" in line for line in colored)  # 실제로 색이 입혀짐

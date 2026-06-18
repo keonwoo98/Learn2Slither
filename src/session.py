@@ -1,8 +1,10 @@
 """Training / evaluation loop orchestration."""
+import sys
 
 from src import config
 from src.environment import Event
-from src.interpreter import ENCODERS, reward_for, vision_lines
+from src.interpreter import (ENCODERS, colorize_vision, reward_for,
+                             vision_lines)
 
 
 class SessionRunner:
@@ -33,10 +35,10 @@ class SessionRunner:
                     break
                 state = encode(self.env)
                 if self.verbose:
-                    print("\n".join(vision_lines(self.env)))
+                    self._print_vision()
                 action = self.agent.choose_action(state, self.learning)
                 if self.verbose:
-                    print(action.name)
+                    print(f"-> {action.name}\n")
                 event = self.env.step(action)
                 if self.learning:
                     done = not self.env.alive
@@ -80,6 +82,13 @@ class SessionRunner:
                 f"{sum(durations) / len(durations):.2f}",
             ])
         return results
+
+    def _print_vision(self):
+        """Print the head's 4-direction vision; colourised on a TTY."""
+        lines = vision_lines(self.env)
+        if sys.stdout.isatty():
+            lines = colorize_vision(lines)
+        print("\n".join(lines))
 
     def _render(self, session_num):
         """Draw the board and pace the loop. False means user quit."""
