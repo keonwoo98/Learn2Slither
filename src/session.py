@@ -85,7 +85,11 @@ class SessionRunner:
         """Draw the board and pace the loop. False means user quit."""
         if self.display is None:
             return True
-        info = (f"session {session_num}  length {self.env.length}  "
-                f"eps {self.agent.epsilon:.2f}")
+        info = [
+            ("session", session_num),
+            ("length", self.env.length),
+            ("duration", self.env.duration),
+            ("epsilon", f"{self.agent.epsilon:.2f}"),
+        ]
         self.display.draw(self.env, info)
         return self.display.tick(self.step_by_step)
