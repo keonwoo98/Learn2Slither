@@ -36,7 +36,7 @@ def test_draw_accepts_no_info():
 def test_window_has_side_panel():
     display = Display(10, speed_ms=1)
     width, height = display.screen.get_size()
-    # 보드는 정사각형이고 오른쪽에 패널이 붙으므로 가로가 더 길다
+    # board is square with a panel on the right, so width > height
     assert width > height
     assert width >= display.board_px + 200
     display.close()

@@ -40,7 +40,7 @@ def test_snake_is_contiguous_straight_and_in_bounds():
         cells = env.snake
         rows = {r for r, _ in cells}
         cols = {c for _, c in cells}
-        # 일직선: 한 축은 고정, 다른 축은 연속 3칸
+        # straight line: one axis fixed, the other 3 contiguous cells
         assert len(rows) == 1 or len(cols) == 1
         varying = sorted(cols) if len(rows) == 1 else sorted(rows)
         assert varying[2] - varying[0] == 2 and len(varying) == 3
@@ -59,14 +59,14 @@ def test_no_overlap_between_snake_and_apples():
 
 def test_spawn_uses_only_free_cells():
     env = make_env()
-    # 한 칸만 남기고 모두 뱀으로 채움
+    # fill the whole board with the snake except one free cell
     env.snake = [(r, c) for r in range(10) for c in range(10)
                  if (r, c) != (0, 0)]
     env.green_apples = set()
     env.red_apples = set()
     env._spawn(env.green_apples)
     assert env.green_apples == {(0, 0)}
-    # 빈 칸이 없으면 스폰 보류(크래시 금지)
+    # no free cell => spawn is skipped (never crashes)
     env._spawn(env.red_apples)
     assert env.red_apples == set()
 
@@ -80,7 +80,7 @@ def test_board_too_small_rejected():
 
 
 def fixed_env(snake, green=(), red=(), size=10, seed=0):
-    """테스트용: 결정된 배치로 환경을 구성한다."""
+    """Test helper: build an environment with a fixed layout."""
     env = make_env(seed=seed, size=size)
     env.snake = list(snake)
     env.green_apples = set(green)
@@ -105,9 +105,9 @@ def test_wall_collision_dies():
 
 
 def test_body_collision_dies():
-    # 머리 (5,5), 몸이 오른쪽→위로 꺾여 (5,6),(4,6),(4,5)
+    # head (5,5), body bends right then up: (5,6),(4,6),(4,5)
     env = fixed_env([(5, 5), (5, 6), (4, 6), (4, 5)])
-    event = env.step(Action.UP)  # (4,5)는 몸
+    event = env.step(Action.UP)  # (4,5) is body
     assert event == Event.DIED
     assert env.alive is False
 
@@ -118,7 +118,7 @@ def test_green_apple_grows_and_respawns():
     assert event == Event.ATE_GREEN
     assert env.length == 4
     assert env.snake[0] == (5, 6)
-    assert len(env.green_apples) == 2  # 새 green apple 스폰
+    assert len(env.green_apples) == 2  # a new green apple spawned
     assert (5, 6) not in env.green_apples
     assert env.max_length == 4
 
@@ -129,7 +129,7 @@ def test_red_apple_shrinks_and_respawns():
     assert event == Event.ATE_RED
     assert env.length == 2
     assert env.snake == [(5, 6), (5, 5)]
-    assert len(env.red_apples) == 1  # 새 red apple 스폰
+    assert len(env.red_apples) == 1  # a new red apple spawned
     assert env.alive
 
 

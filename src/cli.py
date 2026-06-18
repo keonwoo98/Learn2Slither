@@ -96,7 +96,7 @@ def main(argv=None):
     except KeyboardInterrupt:
         print("\nInterrupted.", file=sys.stderr)
         return 130
-    except Exception as exc:  # 서브젝트 규칙: 예기치 않은 크래시 금지
+    except Exception as exc:  # subject rule: never crash unexpectedly
         print(f"snake: error: {exc}", file=sys.stderr)
         return 1
     return 0

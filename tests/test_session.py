@@ -15,7 +15,7 @@ def test_training_run_returns_one_result_per_session(capsys):
     for length, duration in results:
         assert length >= 0 and duration > 0
     assert agent.trained_sessions == 5
-    assert agent.q_table  # 학습이 일어나 Q-table이 채워짐
+    assert agent.q_table  # learning happened, Q-table is populated
     out = capsys.readouterr().out
     assert "Game over, max length =" in out
     assert "max duration =" in out
@@ -40,12 +40,12 @@ def test_verbose_prints_vision_and_action(capsys):
     runner = SessionRunner(env, agent, verbose=True, log_sessions=False)
     runner.run(1)
     out = capsys.readouterr().out
-    assert "H" in out and "W" in out  # vision 출력
-    assert any(a.name in out for a in Action)  # action 출력
+    assert "H" in out and "W" in out  # vision printed
+    assert any(a.name in out for a in Action)  # action printed
 
 
 class _CycleAgent:
-    """2x2 사각형을 영원히 도는 스텁 — starvation cap 검증용."""
+    """Stub that loops a 2x2 square forever, to test the starvation cap."""
 
     encoder_name = "binary12"
     epsilon = 0.0
@@ -67,7 +67,7 @@ class _CycleAgent:
 
 
 class _LoopEnv(Environment):
-    """reset이 항상 같은 배치를 만드는 테스트용 환경."""
+    """Test env whose reset always produces the same layout."""
 
     def reset(self):
         super().reset()
@@ -86,7 +86,7 @@ def test_starvation_cap_ends_looping_session(monkeypatch):
     runner = SessionRunner(env, _CycleAgent(), learning=False,
                            verbose=False, log_sessions=False)
     results = runner.run(1)
-    assert results[0][1] == 20  # 20 스텝에서 강제 종료
+    assert results[0][1] == 20  # force-stopped at 20 steps
 
 
 def test_starvation_cap_prints_truncation_notice(monkeypatch, capsys):

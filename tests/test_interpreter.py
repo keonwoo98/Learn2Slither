@@ -25,7 +25,7 @@ def test_cell_chars():
 
 
 def test_vision_matches_subject_figure():
-    # 서브젝트 IV.2 그림과 동일한 보드 구성:
+    # Same board layout as the subject's IV.2 figure:
     # head (7,9), body (8,9),(8,8) / green (2,9),(3,6) / red (3,9)
     env = fixed_env(
         [(7, 9), (8, 9), (8, 8)],
@@ -50,10 +50,10 @@ def test_vision_matches_subject_figure():
 
 
 def test_state_encodes_adjacent_danger():
-    # 머리 (0,0): UP 벽, LEFT 벽, DOWN 몸, RIGHT 빈칸
+    # head (0,0): UP wall, LEFT wall, DOWN body, RIGHT empty
     env = fixed_env([(0, 0), (1, 0), (2, 0)])
     state = encode_binary12(env)
-    # bit 배치: 방향 i(UP=0,LEFT=1,DOWN=2,RIGHT=3) * 3 + {danger,green,red}
+    # bit layout: dir i(UP=0,LEFT=1,DOWN=2,RIGHT=3)*3 + {danger,green,red}
     assert state == (1 << 0) | (1 << 3) | (1 << 6)
 
 
@@ -62,15 +62,15 @@ def test_state_sees_apples_along_rays():
                     green=[(5, 9)], red=[(0, 5)])
     state = encode_binary12(env)
     expected = (
-        (1 << 2)        # UP: red 보임
-        | (1 << 6)      # DOWN: 몸 인접 danger
-        | (1 << 10)     # RIGHT: green 보임
+        (1 << 2)        # UP: red visible
+        | (1 << 6)      # DOWN: adjacent body = danger
+        | (1 << 10)     # RIGHT: green visible
     )
     assert state == expected
 
 
 def test_state_is_board_size_independent():
-    # 같은 상대 배치라면 10x10과 20x20에서 동일한 state (bonus 근거)
+    # Identical relative layout => identical state on 10x10 and 20x20 (bonus)
     env_small = fixed_env([(5, 5), (6, 5), (7, 5)], green=[(5, 8)])
     env_large = fixed_env([(9, 9), (10, 9), (11, 9)], green=[(9, 12)],
                           size=20)
@@ -92,12 +92,12 @@ def test_rewards():
 
 
 def test_colorize_vision_preserves_characters():
-    # 색을 입혀도 ANSI 코드를 떼면 원본 문자 구성이 그대로여야 한다
-    # (서브젝트 그림 형식 보존).
+    # Colourising must preserve the glyphs: stripping the ANSI codes
+    # must reproduce the subject's exact vision format.
     env = fixed_env([(7, 9), (8, 9), (8, 8)],
                     green=[(2, 9), (3, 6)], red=[(3, 9)])
     plain = vision_lines(env)
     colored = colorize_vision(plain)
     stripped = [re.sub(r"\x1b\[[0-9;]*m", "", line) for line in colored]
     assert stripped == plain
-    assert any("\x1b[" in line for line in colored)  # 실제로 색이 입혀짐
+    assert any("\x1b[" in line for line in colored)  # colours are applied
