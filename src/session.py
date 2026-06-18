@@ -60,7 +60,7 @@ class SessionRunner:
                             f"{config.MAX_STEPS_WITHOUT_FOOD} steps "
                             f"without food)")
                 print(f"Session {num}/{sessions}: "
-                      f"length = {self.env.max_length}, "
+                      f"max length = {self.env.max_length}, "
                       f"duration = {self.env.duration}{note}")
             if stopped:
                 break
