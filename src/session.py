@@ -56,14 +56,22 @@ class SessionRunner:
             if self.learning:
                 self.agent.end_session()
             if self.log_sessions:
-                note = ""
                 if truncated:
                     note = (f" (truncated: "
                             f"{config.MAX_STEPS_WITHOUT_FOOD} steps "
                             f"without food)")
+                elif self.env.death_cause:
+                    note = f" (died: {self.env.death_cause})"
+                else:
+                    note = ""
                 print(f"Session {num}/{sessions}: "
                       f"max length = {self.env.max_length}, "
                       f"duration = {self.env.duration}{note}")
+            if self.display is not None and not stopped:
+                cause = self.env.death_cause or "truncated"
+                if not self.display.show_game_over(
+                        self.env, cause, self.step_by_step):
+                    stopped = True
             if stopped:
                 break
         max_len = max((r[0] for r in results), default=0)

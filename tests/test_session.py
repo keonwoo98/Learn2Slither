@@ -79,6 +79,36 @@ class _LoopEnv(Environment):
         self.max_length = 1
 
 
+class _WallAgent:
+    """Stub that always moves UP (into the top wall)."""
+
+    encoder_name = "binary12"
+    epsilon = 0.0
+
+    def choose_action(self, state, learning=True):
+        return Action.UP
+
+    def update(self, *args):
+        pass
+
+    def end_session(self):
+        pass
+
+
+class _WallEnv(Environment):
+    """Test env whose head sits on the top row, so UP hits the wall."""
+
+    def reset(self):
+        super().reset()
+        self.snake = [(0, 5), (1, 5), (2, 5)]
+        self.green_apples = {(9, 9)}
+        self.red_apples = {(8, 8)}
+        self.alive = True
+        self.duration = 0
+        self.max_length = 3
+        self.death_cause = None
+
+
 def test_starvation_cap_ends_looping_session(monkeypatch):
     from src import config
     monkeypatch.setattr(config, "MAX_STEPS_WITHOUT_FOOD", 20)
@@ -109,6 +139,16 @@ def test_normal_session_log_has_no_truncation_notice(capsys):
     out = capsys.readouterr().out
     assert "truncated" not in out
     assert "Session 1/2" in out
+
+
+def test_session_log_shows_death_cause(capsys):
+    # An always-UP agent dies against the top wall; cause must be logged.
+    env = _WallEnv(rng=random.Random(0))
+    runner = SessionRunner(env, _WallAgent(), learning=False,
+                           verbose=False, log_sessions=True)
+    runner.run(1)
+    out = capsys.readouterr().out
+    assert "died: hit a wall" in out
 
 
 def test_same_model_runs_on_any_board_size(tmp_path):

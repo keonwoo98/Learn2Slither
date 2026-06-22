@@ -49,6 +49,7 @@ class Environment:
         self.alive = True
         self.duration = 0
         self.max_length = len(self.snake)
+        self.death_cause = None
 
     @property
     def length(self):
@@ -86,8 +87,13 @@ class Environment:
         self.duration += 1
         d_row, d_col = DELTAS[action]
         head = (self.snake[0][0] + d_row, self.snake[0][1] + d_col)
-        if not self._in_bounds(head) or head in self.snake:
+        if not self._in_bounds(head):
             self.alive = False
+            self.death_cause = "hit a wall"
+            return Event.DIED
+        if head in self.snake:
+            self.alive = False
+            self.death_cause = "hit its own body"
             return Event.DIED
         self.snake.insert(0, head)
         if head in self.green_apples:
@@ -101,6 +107,7 @@ class Environment:
             self._spawn(self.red_apples)
             if not self.snake:
                 self.alive = False
+                self.death_cause = "length dropped to 0"
                 return Event.DIED
             event = Event.ATE_RED
         else:

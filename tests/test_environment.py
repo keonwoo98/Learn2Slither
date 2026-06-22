@@ -102,6 +102,7 @@ def test_wall_collision_dies():
     event = env.step(Action.UP)
     assert event == Event.DIED
     assert env.alive is False
+    assert env.death_cause == "hit a wall"
 
 
 def test_body_collision_dies():
@@ -110,6 +111,20 @@ def test_body_collision_dies():
     event = env.step(Action.UP)  # (4,5) is body
     assert event == Event.DIED
     assert env.alive is False
+    assert env.death_cause == "hit its own body"
+
+
+def test_death_cause_is_none_while_alive():
+    env = fixed_env([(5, 5), (5, 4), (5, 3)])
+    assert env.death_cause is None
+    env.step(Action.RIGHT)
+    assert env.death_cause is None
+
+
+def test_red_apple_to_zero_length_cause():
+    env = fixed_env([(5, 5)], red=[(5, 6)])
+    env.step(Action.RIGHT)
+    assert env.death_cause == "length dropped to 0"
 
 
 def test_green_apple_grows_and_respawns():

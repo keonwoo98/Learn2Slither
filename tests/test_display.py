@@ -86,3 +86,48 @@ def test_summary_closes_on_any_key():
     press(pygame.K_RETURN)
     display.show_summary(["max length: 10"])
     display.close()
+
+
+def test_game_over_advances_on_space_in_step_mode():
+    display = make_display()
+    env = Environment(rng=random.Random(0))
+    press(pygame.K_SPACE)
+    assert display.show_game_over(env, "hit a wall",
+                                  step_by_step=True) is True
+    display.close()
+
+
+def test_game_over_quit_returns_false():
+    display = make_display()
+    env = Environment(rng=random.Random(0))
+    press(pygame.K_q)
+    assert display.show_game_over(env, "hit a wall",
+                                  step_by_step=True) is False
+    display.close()
+
+
+def test_game_over_auto_mode_can_be_quit():
+    display = make_display()
+    env = Environment(rng=random.Random(0))
+    press(pygame.K_q)
+    assert display.show_game_over(env, "hit a wall",
+                                  step_by_step=False) is False
+    display.close()
+
+
+def test_space_pauses_in_auto_mode():
+    display = make_display()
+    assert display.paused is False
+    press(pygame.K_SPACE)
+    display.tick(step_by_step=False)
+    assert display.paused is True
+    display.close()
+
+
+def test_p_resumes_from_pause():
+    display = make_display()
+    display.paused = True
+    press(pygame.K_p)
+    assert display.tick(step_by_step=False) is True
+    assert display.paused is False
+    display.close()

@@ -5,6 +5,7 @@ MARGIN = 2
 PANEL_W = 240
 MIN_WIN_H = 420
 TARGET_BOARD_PX = 540
+GAME_OVER_MS = 1200
 
 BG = (16, 18, 27)
 BOARD_BG = (28, 30, 42)
@@ -20,7 +21,7 @@ TEXT = (228, 230, 238)
 MUTED = (138, 144, 166)
 ACCENT = (130, 180, 255)
 
-KEYS = ["SPACE  step / start", "P  pause / resume",
+KEYS = ["SPACE  pause / step", "P  resume",
         "+ / -  speed", "Q  quit"]
 
 
@@ -38,6 +39,8 @@ class Display:
         self.paused = False
         self.screen = pygame.display.set_mode((self.win_w, self.win_h))
         pygame.display.set_caption("Learn2Slither")
+        # Held SPACE repeats: tap = one step, hold = continuous stepping.
+        pygame.key.set_repeat(300, 60)
         self.font = pygame.font.SysFont(None, 26)
         self.font_small = pygame.font.SysFont(None, 22)
         self.font_big = pygame.font.SysFont(None, 40)
@@ -155,7 +158,7 @@ class Display:
                     self.speed_ms = max(10, self.speed_ms - 25)
                 elif event.key == pygame.K_MINUS:
                     self.speed_ms = min(1000, self.speed_ms + 25)
-                elif event.key == pygame.K_p:
+                elif event.key in (pygame.K_p, pygame.K_SPACE):
                     self.paused = True
         return True
 
@@ -194,6 +197,35 @@ class Display:
         self._full_screen("Learn2Slither", lines,
                           "SPACE: start     Q: quit", GREEN)
         return self._wait_for_step()
+
+    def show_game_over(self, env, cause, step_by_step):
+        """Show the dying board with the cause, then pause. False = quit."""
+        self.draw(env)
+        overlay = pygame.Surface((self.board_px, self.board_px))
+        overlay.set_alpha(190)
+        overlay.fill(BG)
+        self.screen.blit(overlay, (0, 0))
+        cx = self.board_px // 2
+        title = self.font_big.render("GAME OVER", True, RED)
+        self.screen.blit(title, title.get_rect(center=(cx, cx - 30)))
+        sub = self.font.render(cause, True, TEXT)
+        self.screen.blit(sub, sub.get_rect(center=(cx, cx + 10)))
+        hint = "SPACE: next   Q: quit" if step_by_step else "Q: quit"
+        hint_img = self.font_small.render(hint, True, MUTED)
+        self.screen.blit(hint_img, hint_img.get_rect(center=(cx, cx + 45)))
+        pygame.display.flip()
+        if step_by_step:
+            return self._wait_for_step()
+        deadline = pygame.time.get_ticks() + GAME_OVER_MS
+        while pygame.time.get_ticks() < deadline:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return False
+                if event.type == pygame.KEYDOWN and event.key in (
+                        pygame.K_ESCAPE, pygame.K_q):
+                    return False
+            self.clock.tick(60)
+        return True
 
     def show_summary(self, lines):
         """End screen: session results; any key to close."""
