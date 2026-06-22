@@ -151,6 +151,15 @@ def test_session_log_shows_death_cause(capsys):
     assert "died: hit a wall" in out
 
 
+def test_runner_tracks_last_death_cause():
+    env = _WallEnv(rng=random.Random(0))
+    runner = SessionRunner(env, _WallAgent(), learning=False,
+                           verbose=False, log_sessions=False)
+    assert runner.last_death is None
+    runner.run(1)
+    assert runner.last_death == "hit a wall"
+
+
 def test_same_model_runs_on_any_board_size(tmp_path):
     rng = random.Random(0)
     env = Environment(size=10, rng=rng)

@@ -19,6 +19,7 @@ class SessionRunner:
         self.verbose = verbose
         self.display = display
         self.log_sessions = log_sessions
+        self.last_death = None
 
     def run(self, sessions):
         """Run all sessions. Returns a list of (max_length, duration)."""
@@ -53,6 +54,8 @@ class SessionRunner:
                     truncated = True
                     break
             results.append((self.env.max_length, self.env.duration))
+            self.last_death = ("truncated" if truncated
+                               else self.env.death_cause)
             if self.learning:
                 self.agent.end_session()
             if self.log_sessions:
@@ -67,11 +70,6 @@ class SessionRunner:
                 print(f"Session {num}/{sessions}: "
                       f"max length = {self.env.max_length}, "
                       f"duration = {self.env.duration}{note}")
-            if self.display is not None and not stopped:
-                cause = self.env.death_cause or "truncated"
-                if not self.display.show_game_over(
-                        self.env, cause, self.step_by_step):
-                    stopped = True
             if stopped:
                 break
         max_len = max((r[0] for r in results), default=0)
@@ -107,6 +105,7 @@ class SessionRunner:
             ("length", self.env.length),
             ("duration", self.env.duration),
             ("epsilon", f"{self.agent.epsilon:.2f}"),
+            ("last death", self.last_death or "-"),
         ]
         self.display.draw(self.env, info)
         return self.display.tick(self.step_by_step)
